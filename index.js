@@ -9,7 +9,9 @@ const bcrypt = require('bcryptjs');
 
 
 // to avoid cors error
-app.use(cors())
+app.use(cors({
+    origin:'*'
+}))
 
 app.use(express.json()) //this middleware will extract the body from request and store it in req.body variable
 
