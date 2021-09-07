@@ -10,10 +10,7 @@ const jwt = require('jsonwebtoken');
 
 
 // to avoid cors error
-app.use(cors({
-    origin: "*"
-}
-))
+app.use(cors())
 
 app.use(express.json()) //this middleware will extract the body from request and store it in req.body variable
 
