@@ -3,14 +3,15 @@ const app = express();
 const cors = require("cors");
 const mongodb = require('mongodb');
 const mongoClient = mongodb.MongoClient;
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT;
 const url = "mongodb://localhost:27017"
 const bcrypt = require('bcryptjs');
 
 
 // to avoid cors error
 app.use(cors({
-    origin:'*'
+    'Access-Control-Allow-Origin' : '*',
+  'Access-Control-Allow-Methods':'GET,PUT,POST,DELETE,PATCH,OPTIONS'
 }))
 
 app.use(express.json()) //this middleware will extract the body from request and store it in req.body variable
@@ -45,6 +46,7 @@ app.post("/register", async function (req, res){
         })
 
     } catch (error) {
+        console.log(error);
         res.status(500).json({
             message: "something went wrong"
         })
