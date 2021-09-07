@@ -17,7 +17,7 @@ app.use(express.json()) //this middleware will extract the body from request and
 /* let tasks =[]; */ //as we are going to use mongoDB
 
 app.post("/register", async function (req, res){
-
+    console.log(req.body);
     try {
         //connect the database
         let client = await mongoClient.connect(url) //since it is returning the promise, we are puting in try catch async
