@@ -6,7 +6,6 @@ const mongoClient = mongodb.MongoClient;
 const PORT = process.env.PORT || 3001;
 const url = "mongodb://localhost:27017"
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 
 
 // to avoid cors error
