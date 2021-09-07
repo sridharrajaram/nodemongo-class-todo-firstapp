@@ -3,15 +3,15 @@ const app = express();
 const cors = require("cors");
 const mongodb = require('mongodb');
 const mongoClient = mongodb.MongoClient;
-const PORT = process.env.PORT;
-const url = "mongodb://localhost:27017"
+const PORT = process.env.PORT || 3001;
+//const url = "mongodb://localhost:27017"
+const url = "mongodb+srv://ProjectAdmin:Admin123@cluster0.rclwl.mongodb.net/?retryWrites=true&w=majority"
 const bcrypt = require('bcryptjs');
 
 
 // to avoid cors error
 app.use(cors({
-    'Access-Control-Allow-Origin' : '*',
-  'Access-Control-Allow-Methods':'GET,PUT,POST,DELETE,PATCH,OPTIONS'
+    origin:"*"
 }))
 
 app.use(express.json()) //this middleware will extract the body from request and store it in req.body variable
@@ -208,6 +208,13 @@ app.delete("/delete-task/:id", async function (req, res) {
         })
     }
     
+})
+
+
+app.get("/dashboard", async function(req,res,next){
+    res.json({
+        message:"protected data"
+    })
 })
 
 app.listen(PORT, function (req, res) {
