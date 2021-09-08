@@ -174,7 +174,7 @@ app.post("/create-task",[authenticate], async function (req, res) {
         let db = client.db("todo_app")
 
         //select the collection and perform the action
-        req.body.userid = userid;
+        req.body.userid = req.userid;
         let data = await db.collection("tasks").insertOne(req.body) //since it is returning the promise we put await
 
         //close the database
