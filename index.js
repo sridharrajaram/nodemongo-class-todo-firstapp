@@ -25,6 +25,8 @@ function authenticate(req, res, next) {
                         message: "UnAuthorized"
                     })
                 } else {
+                    console.log(decoded);
+                    req.userid = decoded.id;
                     next()
                 }
             })
@@ -146,7 +148,7 @@ app.get("/todo-list", [authenticate], async function (req, res) {
         let db = client.db("todo_app")
 
         //select the collection and perform the action
-        let data = await db.collection("tasks").find().toArray() //since it is returning the promise we put await, what see is cursor pointer, so toArray
+        let data = await db.collection("tasks").find({userid:req.userid}).toArray() //since it is returning the promise we put await, what see is cursor pointer, so toArray
 
         //close the database
         await client.close();
@@ -172,6 +174,7 @@ app.post("/create-task",[authenticate], async function (req, res) {
         let db = client.db("todo_app")
 
         //select the collection and perform the action
+        req.body.userid = userid;
         let data = await db.collection("tasks").insertOne(req.body) //since it is returning the promise we put await
 
         //close the database
