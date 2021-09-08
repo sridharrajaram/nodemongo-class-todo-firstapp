@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 dotenv.config();
 console.log(process.env);
-const PORT = process.env.PORT
+const PORT = process.env.PORT || 3001;
 const url = process.env.DB_URL
 
 
