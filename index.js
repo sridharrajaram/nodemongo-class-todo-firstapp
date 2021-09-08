@@ -2,23 +2,53 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const mongodb = require('mongodb');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const mongoClient = mongodb.MongoClient;
 const PORT = process.env.PORT || 3001;
 //const url = "mongodb://localhost:27017"
 const url = "mongodb+srv://ProjectAdmin:Admin123@cluster0.rclwl.mongodb.net/?retryWrites=true&w=majority"
-const bcrypt = require('bcryptjs');
 
+
+function authenticate(req, res, next) {
+    try {
+        console.log(req.headers.authorization)
+        //check if token is present
+        // if present, check whether it is valid token
+        if (req.headers.authorization) {
+
+            jwt.verify(req.headers.authorization, "DGpa!zb25PLvNmkv", function (err, decoded) {
+                if (err) {
+                    res.status(401).json({
+                        message: "UnAuthorized"
+                    })
+                } else {
+                    next()
+                }
+            })
+
+        } else {
+            res.status(404).json({
+                message: "No Token Present"
+            })
+        }
+    } catch (error) {
+        res.status(500).json({
+            message: "Internal Server Issue"
+        })
+    }
+}
 
 // to avoid cors error
 app.use(cors({
-    origin:"*"
+    origin: "*"
 }))
 
 app.use(express.json()) //this middleware will extract the body from request and store it in req.body variable
 
 /* let tasks =[]; */ //as we are going to use mongoDB
 
-app.post("/register", async function (req, res){
+app.post("/register", async function (req, res) {
     console.log(req.body);
     try {
         //connect the database
@@ -32,9 +62,9 @@ app.post("/register", async function (req, res){
 
         //Hashing the password before storing in database
         var salt = bcrypt.genSaltSync(10); //tearing in pieces
-        var hash = bcrypt.hashSync(req.body.password,salt) //mixing with secret key
+        var hash = bcrypt.hashSync(req.body.password, salt) //mixing with secret key
         req.body.password = hash; // newgenerated to password
-    
+
         let data = await db.collection("users").insertOne(req.body) //since it is returning the promise we put await
 
         //close the database
@@ -56,7 +86,7 @@ app.post("/register", async function (req, res){
 
 
 
-app.post("/login", async function (req, res){
+app.post("/login", async function (req, res) {
 
     try {
         //connect the database
@@ -66,29 +96,32 @@ app.post("/login", async function (req, res){
         let db = client.db("todo_app")
 
         //find the user with his email address
-        let user = await db.collection("users").findOne({emailAddress:req.body.emailAddress});
+        let user = await db.collection("users").findOne({ emailAddress: req.body.emailAddress });
 
-        if(user){
+        if (user) {
             //Hash the incoming password
             //compare the password with user's password
-            let matchPwd = bcrypt.compareSync(req.body.password,user.password)
-            if(matchPwd){
+            let matchPwd = bcrypt.compareSync(req.body.password, user.password)
+            if (matchPwd) {
                 // Generate JWT token and shared to react APP
+                let token = jwt.sign({ id: user._id }, "DGpa!zb25PLvNmkv")
+                console.log(token);
                 res.json({
-                    message:true
+                    message: true,
+                    token
                 })
             }
-            else{
+            else {
                 res.status(400).json({
                     message: "email address / password does not match"
                 })
             }
-        }else{
+        } else {
             res.status(400).json({
                 message: "email address / password does not match"
             })
         }
-        
+
         //close the database
         await client.close();
 
@@ -100,7 +133,7 @@ app.post("/login", async function (req, res){
 
 })
 
-app.get("/todo-list", async function (req, res) {
+app.get("/todo-list", [authenticate], async function (req, res) {
 
     // mongodb Database concept introduced
     try {
@@ -126,7 +159,7 @@ app.get("/todo-list", async function (req, res) {
 
 })
 
-app.post("/create-task", async function (req, res) {
+app.post("/create-task",[authenticate], async function (req, res) {
 
     // mongodb Database concept introduced
     try {
@@ -153,7 +186,7 @@ app.post("/create-task", async function (req, res) {
 
 })
 
-app.put("/update-task/:id", async function (req, res) {
+app.put("/update-task/:id",[authenticate], async function (req, res) {
 
     // mongodb Database concept introduced
     try {
@@ -165,7 +198,7 @@ app.put("/update-task/:id", async function (req, res) {
 
         //select the collection and perform the action
         let data = await db.collection("tasks")
-                        .findOneAndUpdate({ _id: mongodb.ObjectId(req.params.id) }, { $set: req.body })
+            .findOneAndUpdate({ _id: mongodb.ObjectId(req.params.id) }, { $set: req.body })
 
         //close the database
         await client.close();
@@ -182,8 +215,8 @@ app.put("/update-task/:id", async function (req, res) {
 })
 
 
-app.delete("/delete-task/:id", async function (req, res) {
-    
+app.delete("/delete-task/:id",[authenticate], async function (req, res) {
+
     // mongodb Database concept introduced
     try {
         //connect the database
@@ -194,7 +227,7 @@ app.delete("/delete-task/:id", async function (req, res) {
 
         //select the collection and perform the action
         let data = await db.collection("tasks")
-                        .findOneAndDelete({ _id: mongodb.ObjectId(req.params.id) })
+            .findOneAndDelete({ _id: mongodb.ObjectId(req.params.id) })
 
         //close the database
         await client.close();
@@ -207,13 +240,13 @@ app.delete("/delete-task/:id", async function (req, res) {
             message: "something went wrong"
         })
     }
-    
+
 })
 
 
-app.get("/dashboard", async function(req,res,next){
+app.get("/dashboard", [authenticate], async function (req, res, next) {
     res.json({
-        message:"protected data"
+        message: "protected data"
     })
 })
 
