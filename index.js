@@ -2,12 +2,15 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const mongodb = require('mongodb');
+const mongoClient = mongodb.MongoClient;
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const mongoClient = mongodb.MongoClient;
+const dotenv = require('dotenv');
+dotenv.config();
+console.log(process.env);
 const PORT = process.env.PORT || 3001;
 //const url = "mongodb://localhost:27017"
-const url = "mongodb+srv://ProjectAdmin:Admin123@cluster0.rclwl.mongodb.net/?retryWrites=true&w=majority"
+const url = process.env.DB_URL
 
 
 function authenticate(req, res, next) {
@@ -17,7 +20,7 @@ function authenticate(req, res, next) {
         // if present, check whether it is valid token
         if (req.headers.authorization) {
 
-            jwt.verify(req.headers.authorization, "DGpa!zb25PLvNmkv", function (err, decoded) {
+            jwt.verify(req.headers.authorization, process.env.JWT_SECRET, function (err, decoded) {
                 if (err) {
                     res.status(401).json({
                         message: "UnAuthorized"
@@ -104,7 +107,7 @@ app.post("/login", async function (req, res) {
             let matchPwd = bcrypt.compareSync(req.body.password, user.password)
             if (matchPwd) {
                 // Generate JWT token and shared to react APP
-                let token = jwt.sign({ id: user._id }, "DGpa!zb25PLvNmkv")
+                let token = jwt.sign({ id: user._id }, process.env.JWT_SECRET)
                 console.log(token);
                 res.json({
                     message: true,
